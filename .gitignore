@@ -1,0 +1,30 @@
+# ===== Python =====
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# ===== Java =====
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+out/
+
+# ===== C++ =====
+*.o
+*.out
+*.exe
+a.out
+build/
+
+# ===== IDE =====
+.idea/
+.vscode/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
