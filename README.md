@@ -44,21 +44,18 @@
 
 ### Пример структуры:
 
-seminar-01/
-├── A/
-│ ├── python/
-│ │ └── A.py
-│ ├── java/
-│ │ └── A.java
-│ ├── cpp/
-│ │ └── A.cpp
-│ └── README.md
-├── B/
-├── C/
-├── D/
-├── E/
-├── F/
-└── G/
+seminar-XX/<br>
+├── A/<br>
+│ ├── python/<br>
+│ ├── java/<br>
+│ ├── cpp/<br>
+│ └── README.md<br>
+├── B/<br>
+├── C/<br>
+├── D/<br>
+├── E/<br>
+├── F/<br>
+└── G/<br>
 
 - `seminar-01` — номер семинара  
 - `A`, `B`, `C`, … — задачи семинара  
