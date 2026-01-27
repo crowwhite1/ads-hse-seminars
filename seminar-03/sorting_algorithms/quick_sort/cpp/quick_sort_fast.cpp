@@ -1,13 +1,13 @@
 #include <iostream>
 #include <vector>
+#include <random>
 using namespace std;
 
 // Порог, ниже которого мы не продолжаем quick sort,
 // а в конце добиваем всё insertion sort'ом
 static const int THRESHOLD = 24;
 
-// Сортировка вставками на отрезке [l, r)
-// Очень быстра на маленьких и почти отсортированных массивах
+// Сортировка вставками на [l, r)
 void insertion_sort(vector<long long>& a, int l, int r) {
     for (int i = l + 1; i < r; i++) {
         long long x = a[i];
@@ -20,28 +20,21 @@ void insertion_sort(vector<long long>& a, int l, int r) {
     }
 }
 
-// Возвращает медиану из трёх значений
-// Используется для более качественного выбора pivot
-long long median_of_three(long long x, long long y, long long z) {
-    if (x < y) {
-        if (y < z) return y;
-        return (x < z) ? z : x;
-    } else {
-        if (x < z) return x;
-        return (y < z) ? z : y;
-    }
-}
-
+// Итеративный quick sort:
+// - pivot выбирается случайно
+// - 3-way partition (Dutch National Flag)
+// - меньший кусок обрабатываем сразу, больший пушим в стек
+// - в конце один insertion sort по всему массиву
 void quick_sort(vector<long long>& a) {
     int n = (int)a.size();
     if (n <= 1) return;
 
-    // Стек отрезков [l, r), которые ещё нужно обработать
-    // Используем итеративную версию вместо рекурсии
-    vector<pair<int, int>> st;
-    st.reserve(64);  // Обычно глубина стека O(log n), 64 — с большим запасом
+    // Генератор случайных чисел
+    // Фиксированный seed → детерминированное поведение
+    static std::mt19937 rng(123456);
 
-    // Кладём в стек весь массив
+    vector<pair<int,int>> st;
+    st.reserve(64);          // обычно глубины хватает с большим запасом
     st.push_back({0, n});
 
     // Пока есть отрезки для обработки
@@ -51,38 +44,32 @@ void quick_sort(vector<long long>& a) {
         st.pop_back();
         int l = l0, r = r0;
 
-        // Пока отрезок достаточно большой — продолжаем quick sort
         while (r - l > THRESHOLD) {
+            // случайный pivot из [l, r)
+            uniform_int_distribution<int> dist(l, r - 1);
+            long long pivot = a[dist(rng)];
 
-            // Выбор pivot: медиана из первого, среднего и последнего элемента
-            int m = (l + r) >> 1;
-            long long pivot = median_of_three(a[l], a[m], a[r - 1]);
-
-            // 3-way partition (Dutch National Flag)
-            int lt = l;        // a[l:lt] < pivot
-            int i = l;         // текущий индекс
-            int gt = r - 1;    // a[gt+1:r] > pivot
+            // 3-way partition
+            int lt = l;       // a[l:lt] < pivot
+            int i  = l;       // текущий индекс
+            int gt = r - 1;   // a[gt+1:r] > pivot
 
             while (i <= gt) {
                 long long ai = a[i];
                 if (ai < pivot) {
-                    // переносим элемент в зону < pivot
                     a[i] = a[lt];
                     a[lt] = ai;
                     lt++;
                     i++;
                 } else if (ai > pivot) {
-                    // переносим элемент в зону > pivot
                     a[i] = a[gt];
                     a[gt] = ai;
                     gt--;
                 } else {
-                    // элемент равен pivot
                     i++;
                 }
             }
 
-            // После разбиения:
             // [l, lt)      < pivot
             // [lt, gt+1)   == pivot
             // [gt+1, r)    > pivot
@@ -90,27 +77,22 @@ void quick_sort(vector<long long>& a) {
             int leftL = l, leftR = lt;
             int rightL = gt + 1, rightR = r;
 
-            // Чтобы стек оставался маленьким:
-            // больший кусок кладём в стек,
-            // меньший продолжаем обрабатывать сразу
+            // меньший кусок — сразу, больший — в стек
             if ((leftR - leftL) < (rightR - rightL)) {
-                if (rightR - rightL > THRESHOLD) {
+                if (rightR - rightL > THRESHOLD)
                     st.push_back({rightL, rightR});
-                }
                 l = leftL;
                 r = leftR;
             } else {
-                if (leftR - leftL > THRESHOLD) {
+                if (leftR - leftL > THRESHOLD)
                     st.push_back({leftL, leftR});
-                }
                 l = rightL;
                 r = rightR;
             }
         }
     }
 
-    // В конце один раз добиваем почти отсортированный массив
-    // insertion sort'ом
+    // один финальный проход insertion sort'ом
     insertion_sort(a, 0, n);
 }
 

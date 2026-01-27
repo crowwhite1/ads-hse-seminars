@@ -1,3 +1,5 @@
+import random
+
 THRESHOLD = 24
 
 def insertion_sort(a, l=0, r=None):
@@ -11,19 +13,6 @@ def insertion_sort(a, l=0, r=None):
             a[j + 1] = a[j]
             j -= 1
         a[j + 1] = x
-
-
-def median_of_three(x, y, z):
-    """Возвращает медиану из трёх значений (pivot), без сортировки массива."""
-    # Эквивалент: sorted([x,y,z])[1], но быстрее и без аллокаций.
-    if x < y:
-        if y < z:
-            return y
-        return z if x < z else x
-    else:
-        if x < z:
-            return x
-        return z if y < z else y
 
 
 def quick_sort(a):
@@ -46,8 +35,7 @@ def quick_sort(a):
         l, r = pop()
 
         while r - l > THRESHOLD:
-            m = (l + r) >> 1
-            pivot = median_of_three(a[l], a[m], a[r - 1])
+            pivot = a[random.randrange(l, r)]
 
             # 3-way partition:
             lt = l          # a[l:lt] < pivot

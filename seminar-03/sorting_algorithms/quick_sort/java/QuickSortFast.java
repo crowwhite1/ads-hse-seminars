@@ -1,14 +1,12 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Random;
 
 public class QuickSortFast {
-
-    // Порог, ниже которого не продолжаем quick sort,
-    // а потом добиваем всё insertion sort'ом
     static final int THRESHOLD = 24;
+    static final Random RNG = new Random();
 
     // Сортировка вставками на отрезке [l, r)
-    // Быстра на маленьких массивах
     static void insertionSort(int[] a, int l, int r) {
         for (int i = l + 1; i < r; i++) {
             int x = a[i];
@@ -21,85 +19,64 @@ public class QuickSortFast {
         }
     }
 
-    // Возвращает медиану из трёх значений
-    // Используется для более “качественного” pivot
-    static int medianOfThree(int x, int y, int z) {
-        if (x < y) {
-            if (y < z) return y;
-            return (x < z) ? z : x;
-        } else {
-            if (x < z) return x;
-            return (y < z) ? z : y;
-        }
-    }
-
+    // Итеративный quick sort:
+    // - pivot выбирается случайно из [l, r)
+    // - 3-way partition (Dutch National Flag)
+    // - стек маленький: больший кусок пушим, меньший обрабатываем сразу
+    // - маленькие куски добиваем одним insertion sort'ом в конце
     static void quickSort(int[] a) {
         int n = a.length;
         if (n <= 1) return;
 
-        // Стек отрезков [l, r), которые нужно обработать
-        int cap = 64;                 // начальная ёмкость стека
-        int[] ls = new int[cap];      // левые границы
-        int[] rs = new int[cap];      // правые границы
+        int cap = 64;                // стартовая ёмкость стека
+        int[] ls = new int[cap];     // левые границы
+        int[] rs = new int[cap];     // правые границы
         int top = 0;
 
-        // Кладём весь массив в стек
+        // кладём весь массив
         ls[top] = 0;
         rs[top] = n;
         top++;
 
-        // Пока есть отрезки для обработки
         while (top > 0) {
-            // Берём очередной отрезок
             top--;
             int l = ls[top];
             int r = rs[top];
 
-            // Пока отрезок “достаточно большой” — режем quick sort'ом
             while (r - l > THRESHOLD) {
+                int pivot = a[l + RNG.nextInt(r - l)]; // случайный pivot
 
-                // Выбор pivot: медиана из a[l], a[mid], a[r-1]
-                int m = (l + r) >>> 1;
-                int pivot = medianOfThree(a[l], a[m], a[r - 1]);
-
-                // 3-way partition (Dutch National Flag)
-                int lt = l;        // a[l:lt] < pivot
-                int i = l;         // текущий индекс
-                int gt = r - 1;    // a[gt+1:r] > pivot
+                // 3-way partition:
+                int lt = l;       // a[l:lt] < pivot
+                int i = l;        // текущий индекс
+                int gt = r - 1;   // a[gt+1:r] > pivot
 
                 while (i <= gt) {
                     int ai = a[i];
                     if (ai < pivot) {
-                        // переносим элемент в зону < pivot
                         a[i] = a[lt];
                         a[lt] = ai;
                         lt++;
                         i++;
                     } else if (ai > pivot) {
-                        // переносим элемент в зону > pivot
                         a[i] = a[gt];
                         a[gt] = ai;
                         gt--;
                     } else {
-                        // элемент == pivot
                         i++;
                     }
                 }
 
-                // Теперь:
-                // [l, lt)      < pivot
-                // [lt, gt+1)   == pivot
-                // [gt+1, r)    > pivot
+                // [l, lt) < pivot
+                // [lt, gt+1) == pivot
+                // [gt+1, r) > pivot
 
                 int leftL = l, leftR = lt;
                 int rightL = gt + 1, rightR = r;
 
-                // Чтобы стек был маленьким:
-                // больший кусок кладём в стек,
-                // меньший обрабатываем сразу
+                // меньший кусок обрабатываем сразу, больший — в стек
                 if ((leftR - leftL) < (rightR - rightL)) {
                     if (rightR - rightL > THRESHOLD) {
-                        // расширяем стек при необходимости
                         if (top == cap) {
                             cap *= 2;
                             int[] nls = new int[cap];
@@ -136,7 +113,7 @@ public class QuickSortFast {
             }
         }
 
-        // Один раз добиваем весь массив insertion sort'ом
+        // один раз добиваем почти отсортированный массив
         insertionSort(a, 0, n);
     }
 
@@ -148,9 +125,7 @@ public class QuickSortFast {
 
         if (n > 0) {
             String[] parts = br.readLine().split(" ");
-            for (int i = 0; i < n; i++) {
-                a[i] = Integer.parseInt(parts[i]);
-            }
+            for (int i = 0; i < n; i++) a[i] = Integer.parseInt(parts[i]);
         }
 
         quickSort(a);
