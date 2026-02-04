@@ -9,7 +9,6 @@ public class A {
         String[] parts = in.readLine().split(" ");
         int a = Integer.parseInt(parts[0]);
         int b = Integer.parseInt(parts[1]);
-        int c = Math.gcd()
         System.out.println(a + b);
     }
 }
